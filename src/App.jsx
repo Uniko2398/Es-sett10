@@ -1,35 +1,54 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import "bootstrap/dist/css/bootstrap.min.css";
+import "./App.css";
+import Navbarx from "./components/Navbarx";
+import Selection from "./components/Selection";
 
-function App() {
-  const [count, setCount] = useState(0)
+import { useState, useEffect } from "react";
+import SelectedCity from "./components/SelectedCity";
+
+const App = () => {
+  const [location, setLocation] = useState("");
+  const [weather, setWeather] = useState(null);
+  const [error, setError] = useState("");
+
+  const apiKey = "838556691450b0921eaa370ca3dd0198";
+
+  const fetchWeather = async (selectedLocation) => {
+    if (!selectedLocation) {
+      setError("Seleziona una località.");
+      return;
+    }
+
+    setError("");
+    try {
+      const response = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${selectedLocation}&appid=${apiKey}`
+      );
+      const data = await response.json();
+      setWeather(data.main); // Aggiorna lo stato con i dati meteo
+      // eslint-disable-next-line no-unused-vars
+    } catch (error) {
+      setError("Errore nel recupero dei dati meteo.");
+    }
+  };
+
+  // Aggiorna il meteo automaticamente quando cambia la città selezionata
+  useEffect(() => {
+    if (location) {
+      fetchWeather(location);
+    }
+  }, [location]);
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <Navbarx />
+      <div className="weather-app">
+        <h1>Meteo</h1>
+        <Selection setLocation={setLocation} />
+        <SelectedCity weather={weather} error={error} />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;
